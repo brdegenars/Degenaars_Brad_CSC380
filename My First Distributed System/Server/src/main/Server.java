@@ -21,7 +21,7 @@ public class Server {
         try{
 
             ServerSocket serverSocket = null;
-            int SERVER_PORT = 30000;
+            int SERVER_PORT = 8080;
 
             try{
                 serverSocket = new ServerSocket(SERVER_PORT);
@@ -40,11 +40,13 @@ public class Server {
                 InputStream inputStream = null;
 
                 BufferedReader bufferedReader;
+                PrintWriter writeOut;
                 List<String> valuesReceived = null;
 
                 inputStream = clientSocket.getInputStream();
                 out = clientSocket.getOutputStream();
 
+                writeOut = new PrintWriter(out, true);
                 bufferedReader  = new BufferedReader(new InputStreamReader(inputStream));
                 valuesReceived = new ArrayList<String>();
 
@@ -53,9 +55,11 @@ public class Server {
                 while ((input = bufferedReader.readLine()) != null)
                     valuesReceived.add(input);
 
+                bufferedReader.close();
+
                 int sum, difference;
 
-                if (!valuesReceived.isEmpty()){
+//                if (!valuesReceived.isEmpty()){
                     int a = Integer.parseInt(valuesReceived.get(0));
                     int b = Integer.parseInt(valuesReceived.get(1));
 
@@ -64,20 +68,21 @@ public class Server {
 
                     System.out.println("Value 1: " + a);
                     System.out.println("Value 2: " + b + "\n");
+
                     System.out.println("Sum: " + sum);
                     System.out.println("Difference: " + difference);
 
-                    byte[] returnMessage = ("Sum: " + sum).getBytes();
-                    out.write(returnMessage, 0, returnMessage.length);
+                    writeOut.println("Sum: " + sum);
+                    writeOut.println("Difference: " + difference);
+//                }
 
-                    returnMessage = ("Difference: " + difference).getBytes();
-                    out.write(returnMessage, 0, returnMessage.length);
-                }
-
+                writeOut.flush();
+                writeOut.close();
                 out.flush();
                 out.close();
                 inputStream.close();
                 clientSocket.close();
+                serverSocket.close();
             }
 
         } catch (IOException e){

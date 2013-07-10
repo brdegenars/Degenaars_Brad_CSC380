@@ -17,13 +17,15 @@ import java.util.Scanner;
  */
 public class Client {
 
-    public static int[] promptUser(){
+    public static int[] promptUser() throws IOException{
 
         String userInput;
-        Scanner scanner = new Scanner(System.in);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
         System.out.print("Please enter two numbers, separated by a comma (2,2): ");
-        userInput = scanner.nextLine();
+        userInput = reader.readLine();
+
+        reader.close();
 
         return extractValues(userInput);
     }
@@ -43,7 +45,7 @@ public class Client {
     public static void main(String[] args){
         try{
 
-            int SERVER_PORT = 30000;
+            int SERVER_PORT = 8080;
 
             Socket clientSideSocket = null;
             PrintWriter out = null;
@@ -51,22 +53,22 @@ public class Client {
 
             clientSideSocket = new Socket("localhost", SERVER_PORT);
             out = new PrintWriter(clientSideSocket.getOutputStream(), true);
-            bufferedReader = new BufferedReader(new InputStreamReader(clientSideSocket.getInputStream()));
 
             int[] values = promptUser();
 
-            out.println(values[0]);
-            out.println(values[1]);
+            for(int value : values)
+                out.println(value);
+
+            bufferedReader = new BufferedReader(new InputStreamReader(clientSideSocket.getInputStream()));
 
             String fromServer;
 
             while ((fromServer = bufferedReader.readLine()) != null)
                 System.out.println("Server: " + fromServer);
 
-            out.flush();
-
-            out.close();
             bufferedReader.close();
+            out.flush();
+            out.close();
             clientSideSocket.close();
 
         } catch (IOException e){
