@@ -64,6 +64,7 @@ public class Client {
                 System.out.println("Server: " + fromServer);
 
             out.flush();
+
             out.close();
             bufferedReader.close();
             clientSideSocket.close();
