@@ -17,54 +17,51 @@ import java.util.Scanner;
  */
 public class Client {
 
-    public static int[] promptUser() throws IOException{
+    public static String promptUser(String message) throws IOException{
 
         String userInput;
-        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
-        System.out.print("Please enter two numbers, separated by a comma (2,2): ");
-        userInput = reader.readLine();
+        Scanner scanner = new Scanner(System.in);
 
-        reader.close();
+        System.out.println(message);
+        userInput = scanner.nextLine();
 
-        return extractValues(userInput);
+        return userInput;
     }
 
-    public static int[] extractValues(String input){
+    public static void printResponse(BufferedReader bufferedReader) throws IOException{
 
-        int a, b;
+        String fromServer = bufferedReader.readLine();
+        System.out.println("Server: " + fromServer);
+    }
 
-        input = input.trim();
+    public static void writeLine(PrintWriter out, String message){
 
-        a = Integer.parseInt(input.substring(0,1));
-        b = Integer.parseInt(input.substring(2));
-
-        return new int[]{a,b};
+        out.println(message);
+        out.flush();
     }
 
     public static void main(String[] args){
         try{
-
             int SERVER_PORT = 8080;
 
-            Socket clientSideSocket = null;
-            PrintWriter out = null;
-            BufferedReader bufferedReader = null;
+            Socket clientSideSocket = new Socket("localhost", SERVER_PORT);
+            PrintWriter out = new PrintWriter(clientSideSocket.getOutputStream());
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(clientSideSocket.getInputStream()));
 
-            clientSideSocket = new Socket("localhost", SERVER_PORT);
-            out = new PrintWriter(clientSideSocket.getOutputStream(), true);
+            String operation = promptUser("Addition or Subtraction? : ");
+            writeLine(out, operation.toLowerCase());
+            printResponse(bufferedReader);
 
-            int[] values = promptUser();
+            String shortOperation = operation.equalsIgnoreCase("addition")? "add" : "subtract";
 
-            for(int value : values)
-                out.println(value);
+            String firstValue = promptUser("First number to " + shortOperation);
+            writeLine(out, firstValue);
+            printResponse(bufferedReader);
 
-            bufferedReader = new BufferedReader(new InputStreamReader(clientSideSocket.getInputStream()));
-
-            String fromServer;
-
-            while ((fromServer = bufferedReader.readLine()) != null)
-                System.out.println("Server: " + fromServer);
+            String secondValue = promptUser("Second number to " + shortOperation);
+            writeLine(out, secondValue);
+            printResponse(bufferedReader);
 
             bufferedReader.close();
             out.flush();

@@ -5,8 +5,6 @@ import math.MathLogic;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -16,6 +14,14 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public class Server {
+
+    private static final String OK_MESSAGE = "OK.";
+
+    public static void writeLine(PrintWriter out, String message){
+
+        out.println(message);
+        out.flush();
+    }
 
     public static void main(String[] args){
         try{
@@ -36,51 +42,40 @@ public class Server {
 
             if (clientSocket != null){
 
-                OutputStream out = null;
-                InputStream inputStream = null;
-
                 BufferedReader bufferedReader;
-                PrintWriter writeOut;
-                List<String> valuesReceived = null;
+                PrintWriter out;
 
-                inputStream = clientSocket.getInputStream();
-                out = clientSocket.getOutputStream();
+                out = new PrintWriter(clientSocket.getOutputStream());
+                bufferedReader  = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
-                writeOut = new PrintWriter(out, true);
-                bufferedReader  = new BufferedReader(new InputStreamReader(inputStream));
-                valuesReceived = new ArrayList<String>();
+                String operation = bufferedReader.readLine();
+                writeLine(out, OK_MESSAGE);
 
-                String input;
+                String firstValue = bufferedReader.readLine();
+                writeLine(out, OK_MESSAGE);
 
-                while ((input = bufferedReader.readLine()) != null)
-                    valuesReceived.add(input);
-
-                bufferedReader.close();
-
-                int sum, difference;
+                String secondValue = bufferedReader.readLine();
 
 //                if (!valuesReceived.isEmpty()){
-                    int a = Integer.parseInt(valuesReceived.get(0));
-                    int b = Integer.parseInt(valuesReceived.get(1));
-
-                    sum = MathLogic.add(a, b);
-                    difference = MathLogic.subtract(a, b);
+                    int a = Integer.parseInt(firstValue);
+                    int b = Integer.parseInt(secondValue);
 
                     System.out.println("Value 1: " + a);
                     System.out.println("Value 2: " + b + "\n");
 
-                    System.out.println("Sum: " + sum);
-                    System.out.println("Difference: " + difference);
-
-                    writeOut.println("Sum: " + sum);
-                    writeOut.println("Difference: " + difference);
+                    if(operation.equalsIgnoreCase("addition")){
+                        int sum = MathLogic.add(a, b);
+                        System.out.println("Sum: " + sum);
+                        writeLine(out, firstValue + " + " + secondValue + " = " + sum);
+                    } else {
+                        int difference = MathLogic.subtract(a, b);
+                        System.out.println("Difference: " + difference);
+                        writeLine(out, firstValue + " - " + secondValue + " = " + difference);
+                    }
 //                }
 
-                writeOut.flush();
-                writeOut.close();
                 out.flush();
                 out.close();
-                inputStream.close();
                 clientSocket.close();
                 serverSocket.close();
             }
