@@ -3,8 +3,13 @@ package main;
 import math.MathLogic;
 
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -16,23 +21,18 @@ import java.net.Socket;
 public class Server {
 
     private static final String OK_MESSAGE = "OK.";
+    private static final String BAD_MESSAGE = "BAD.";
 
-    public static void writeLine(PrintWriter out, String message){
-
-        out.println(message);
-        out.flush();
-    }
-
-    public static void main(String[] args){
+    @SuppressWarnings("unchecked")
+    public Server(int serverPort){
         try{
 
             ServerSocket serverSocket = null;
-            int SERVER_PORT = 8080;
 
             try{
-                serverSocket = new ServerSocket(SERVER_PORT);
+                serverSocket = new ServerSocket(serverPort);
             } catch (Exception e){
-                System.out.println("Couldn't listen on " + SERVER_PORT);
+                System.out.println("Couldn't listen on " + serverPort);
             }
 
             Socket clientSocket = null;
@@ -48,33 +48,65 @@ public class Server {
                 out = new PrintWriter(clientSocket.getOutputStream());
                 bufferedReader  = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
-                String operation = bufferedReader.readLine();
-                writeLine(out, OK_MESSAGE);
+                String userInput;
+                List<String> methodSignatures = getMethodSignatures(MathLogic.class);
+                List<String> methodNames = new ArrayList<String>();
 
-                String firstValue = bufferedReader.readLine();
-                writeLine(out, OK_MESSAGE);
+                StringBuilder response = new StringBuilder();
+                for (String currentSignature : methodSignatures) {
+                    methodNames.add(currentSignature.split("\\(")[0]);
+                    response.append(currentSignature);
+                    response.append("//");
+                }
+                writeLine(out, response.toString());
+                response.delete(0, response.length());
 
-                String secondValue = bufferedReader.readLine();
-
-//                if (!valuesReceived.isEmpty()){
-                    int a = Integer.parseInt(firstValue);
-                    int b = Integer.parseInt(secondValue);
-
-                    System.out.println("Value 1: " + a);
-                    System.out.println("Value 2: " + b + "\n");
-
-                    if(operation.equalsIgnoreCase("addition")){
-                        int sum = MathLogic.add(a, b);
-                        System.out.println("Sum: " + sum);
-                        writeLine(out, firstValue + " + " + secondValue + " = " + sum);
-                    } else {
-                        int difference = MathLogic.subtract(a, b);
-                        System.out.println("Difference: " + difference);
-                        writeLine(out, firstValue + " - " + secondValue + " = " + difference);
+                do {
+                    userInput = bufferedReader.readLine();
+                    if (userInput.equalsIgnoreCase("q")){
+                        writeLine(out, OK_MESSAGE);
+                        break;
                     }
-//                }
+                    String[] userMethodParts = userInput.split("\\(");
+                    boolean foundMethod = false;
+                    for (String methodName : methodNames) {
+                        String userMethodName = userMethodParts[0];
+                        if (userMethodName.equalsIgnoreCase(methodName)){
+                            Object[] serverMethodParameters = userMethodParts[1].split(",");
+                            String lastParam = (String)serverMethodParameters[serverMethodParameters.length - 1];
+                            lastParam = lastParam.substring(0, lastParam.length() - 1);
+                            serverMethodParameters[serverMethodParameters.length - 1] = lastParam;
+                            try{
+                                Class mathLogic = Class.forName(MathLogic.class.getName());
+                                Object matLog = mathLogic.newInstance();
 
-                out.flush();
+                                Method methodToInvoke = mathLogic.getMethod(methodName, Object[].class);
+                                int result = (Integer)methodToInvoke.invoke(matLog, new Object[] {serverMethodParameters});
+                                response.append(result);
+
+                            } catch (NoSuchMethodException e){
+                                e.printStackTrace();
+                            } catch (InvocationTargetException e) {
+                                e.printStackTrace();
+                            } catch (IllegalAccessException e) {
+                                e.printStackTrace();
+                            } catch (ClassNotFoundException e) {
+                                e.printStackTrace();
+                            } catch (InstantiationException e) {
+                                e.printStackTrace();
+                            }
+                            foundMethod = true;
+                            writeLine(out, response.toString());
+                            response.delete(0, response.length());
+                            break;
+                        }
+                    }
+                    if (!foundMethod)
+                        writeLine(out, BAD_MESSAGE);
+
+                    out.flush();
+                } while(true);
+
                 out.close();
                 clientSocket.close();
                 serverSocket.close();
@@ -83,5 +115,41 @@ public class Server {
         } catch (IOException e){
             e.printStackTrace();
         }
+    }
+
+    protected static void writeLine(PrintWriter out, String message){
+
+        out.println(message);
+        out.flush();
+    }
+
+    protected List<String> getMethodSignatures(Class currentClass){
+
+        Method[] methods = currentClass.getDeclaredMethods();
+
+        List<String> methodSignatures = new ArrayList<String>();
+        StringBuilder signatureBuilder = new StringBuilder();
+
+        for (Method currentMethod : methods) {
+            signatureBuilder.append(currentMethod.getName());
+            signatureBuilder.append("(");
+
+            Type[] parameterTypes = currentMethod.getGenericParameterTypes();
+
+            for (int j = 0; j < parameterTypes.length; j++) {
+                signatureBuilder.append(parameterTypes[j]);
+                if (j != parameterTypes.length - 1)
+                    signatureBuilder.append(", ");
+            }
+
+            signatureBuilder.append(")");
+            methodSignatures.add(signatureBuilder.toString());
+            signatureBuilder.delete(0, signatureBuilder.length());
+        }
+        return methodSignatures;
+    }
+
+    public static void main(String[] args){
+        new Server(8080);
     }
 }

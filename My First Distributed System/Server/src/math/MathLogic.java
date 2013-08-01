@@ -9,11 +9,21 @@ package math;
  */
 public class MathLogic {
 
-    public static int add(int a, int b){
-        return a + b;
+    public static int add(Object... a) throws NumberFormatException{
+        int total = 0;
+        for (Object o : a) {
+            int temp = Integer.parseInt(o.toString());
+            total += temp;
+        }
+        return total;
     }
 
-    public static int subtract(int a, int b){
-        return a - b;
+    public static int subtract(Object... a) throws NumberFormatException{
+        int total = Integer.parseInt(a[0].toString());
+        for (int i = 1; i < a.length; i++) {
+            int temp = Integer.parseInt(a[i].toString());
+            total -= temp;
+        }
+        return total;
     }
 }

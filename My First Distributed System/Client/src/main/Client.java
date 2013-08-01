@@ -17,7 +17,10 @@ import java.util.Scanner;
  */
 public class Client {
 
-    public static String promptUser(String message) throws IOException{
+    private static String[] availableMethods;
+    private static String operation;
+
+    protected static String promptUser(String message) throws IOException{
 
         String userInput;
 
@@ -29,39 +32,78 @@ public class Client {
         return userInput;
     }
 
-    public static void printResponse(BufferedReader bufferedReader) throws IOException{
+    protected static void printResponse(BufferedReader bufferedReader) throws IOException{
 
         String fromServer = bufferedReader.readLine();
         System.out.println("Server: " + fromServer);
     }
 
-    public static void writeLine(PrintWriter out, String message){
+    protected static void writeLine(PrintWriter out, String message){
 
         out.println(message);
         out.flush();
     }
 
+    protected static boolean validateMethodCall(String methodToInvoke){
+
+        boolean validMethod = false;
+
+        String[] methodParts = methodToInvoke.split("\\(");
+        String methodName = methodParts[0];
+        operation = methodName;
+        String methodParametersWhole = methodParts[1].substring(0, (methodParts[1].length()-1));
+        String[] methodParametersParts = methodParametersWhole.split(",");
+
+        for(String methodSignature : availableMethods){
+
+            String[] currentMethodParts = methodSignature.split("\\(");
+            String currentMethodName = currentMethodParts[0];
+            String[] currentMethodParameterTypes = currentMethodParts[1].substring(0, (currentMethodParts[1].length()-1)).split(",");
+
+            if (methodName.equalsIgnoreCase(currentMethodName)){
+                validMethod = true;
+            }
+        }
+        return validMethod;
+    }
+
     public static void main(String[] args){
+
         try{
             int SERVER_PORT = 8080;
+            boolean validMethod, wantsToQuit = false;
 
             Socket clientSideSocket = new Socket("localhost", SERVER_PORT);
             PrintWriter out = new PrintWriter(clientSideSocket.getOutputStream());
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(clientSideSocket.getInputStream()));
 
-            String operation = promptUser("Addition or Subtraction? : ");
-            writeLine(out, operation.toLowerCase());
-            printResponse(bufferedReader);
+            do {
+                do {
+                    System.out.println("The follow methods are available: ");
+                    if (availableMethods == null){
+                        String serverResponse = bufferedReader.readLine();
+                        availableMethods = serverResponse.split("//");
+                    }
 
-            String shortOperation = operation.equalsIgnoreCase("addition")? "add" : "subtract";
+                    for(String methodSignature : availableMethods){
+                        System.out.println(methodSignature.split("\\(")[0] + "()");
+                    }
+                    System.out.println();
 
-            String firstValue = promptUser("First number to " + shortOperation);
-            writeLine(out, firstValue);
-            printResponse(bufferedReader);
-
-            String secondValue = promptUser("Second number to " + shortOperation);
-            writeLine(out, secondValue);
-            printResponse(bufferedReader);
+                    String methodToInvoke = promptUser("Which method would you like to call?\nExample: add(2,2) or subtract(10,2,4)\n(Type 'Q' to quit): ");
+                    if (methodToInvoke.equalsIgnoreCase("q")){
+                        out.println(methodToInvoke);
+                        System.out.println(bufferedReader.readLine());
+                        wantsToQuit = true;
+                        break;
+                    }
+                    validMethod = validateMethodCall(methodToInvoke);
+                    if(validMethod){
+                        writeLine(out, methodToInvoke);
+                        printResponse(bufferedReader);
+                    }
+                } while (validMethod);
+            } while (!wantsToQuit);
 
             bufferedReader.close();
             out.flush();
