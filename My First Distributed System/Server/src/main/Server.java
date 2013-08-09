@@ -1,6 +1,6 @@
 package main;
 
-import math.MathLogic;
+import math.IMath;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
@@ -8,6 +8,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,63 +51,100 @@ public class Server {
                 bufferedReader  = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
                 String userInput;
-                List<String> methodSignatures = getMethodSignatures(MathLogic.class);
-                List<String> methodNames = new ArrayList<String>();
-
-                StringBuilder response = new StringBuilder();
-                for (String currentSignature : methodSignatures) {
-                    methodNames.add(currentSignature.split("\\(")[0]);
-                    response.append(currentSignature);
-                    response.append("//");
+                List<Class<IMath>> classesInMathPackage = null;
+                try {
+                     classesInMathPackage = getClassesInPackage("math");
+                } catch (ClassNotFoundException e) {
+                    writeLine(out, "Sorry, couldn't find any classes in the math package.");
+                    System.exit(-1);
                 }
-                writeLine(out, response.toString());
-                response.delete(0, response.length());
+                StringBuilder firstResponse = new StringBuilder();
 
-                do {
+                for(Class<IMath> mathClass : classesInMathPackage){
+                    firstResponse.append(mathClass.getName().replaceAll(".class", ""));
+                    firstResponse.append("//");
+                }
+
+                boolean classExists = true;
+
+                do{
+                    writeLine(out, firstResponse.toString());
+
                     userInput = bufferedReader.readLine();
-                    if (userInput.equalsIgnoreCase("q")){
-                        writeLine(out, OK_MESSAGE);
-                        break;
-                    }
-                    String[] userMethodParts = userInput.split("\\(");
-                    boolean foundMethod = false;
-                    for (String methodName : methodNames) {
-                        String userMethodName = userMethodParts[0];
-                        if (userMethodName.equalsIgnoreCase(methodName)){
-                            Object[] serverMethodParameters = userMethodParts[1].split(",");
-                            String lastParam = (String)serverMethodParameters[serverMethodParameters.length - 1];
-                            lastParam = lastParam.substring(0, lastParam.length() - 1);
-                            serverMethodParameters[serverMethodParameters.length - 1] = lastParam;
-                            try{
-                                Class mathLogic = Class.forName(MathLogic.class.getName());
-                                Object matLog = mathLogic.newInstance();
+                    Class desiredClass = null;
 
-                                Method methodToInvoke = mathLogic.getMethod(methodName, Object[].class);
-                                int result = (Integer)methodToInvoke.invoke(matLog, new Object[] {serverMethodParameters});
-                                response.append(result);
-
-                            } catch (NoSuchMethodException e){
-                                e.printStackTrace();
-                            } catch (InvocationTargetException e) {
-                                e.printStackTrace();
-                            } catch (IllegalAccessException e) {
-                                e.printStackTrace();
-                            } catch (ClassNotFoundException e) {
-                                e.printStackTrace();
-                            } catch (InstantiationException e) {
-                                e.printStackTrace();
-                            }
-                            foundMethod = true;
-                            writeLine(out, response.toString());
-                            response.delete(0, response.length());
+                    for(Class mathClass: classesInMathPackage){
+                        String mathClassShortName = (mathClass.getName().replaceAll(".class", "")).split("\\.")[1];
+                        if(userInput.equals(mathClassShortName)){
+                            desiredClass = mathClass;
                             break;
                         }
                     }
-                    if (!foundMethod)
-                        writeLine(out, BAD_MESSAGE);
 
-                    out.flush();
-                } while(true);
+                    List<String> methodSignatures = getMethodSignatures(desiredClass);
+                    List<String> methodNames = new ArrayList<String>();
+
+                    if(methodSignatures != null){
+
+                        StringBuilder response = new StringBuilder();
+                        for (String currentSignature : methodSignatures) {
+                            methodNames.add(currentSignature.split("\\(")[0]);
+                            response.append(currentSignature);
+                            response.append("//");
+                        }
+                        writeLine(out, response.toString());
+                        response.delete(0, response.length());
+
+                        do {
+                            userInput = bufferedReader.readLine();
+                            if (userInput.equalsIgnoreCase("q")){
+                                writeLine(out, OK_MESSAGE);
+                                break;
+                            }
+                            String[] userMethodParts = userInput.split("\\(");
+                            boolean foundMethod = false;
+                            for (String methodName : methodNames) {
+                                String userMethodName = userMethodParts[0];
+                                if (userMethodName.equalsIgnoreCase(methodName)){
+                                    Object[] serverMethodParameters = userMethodParts[1].split(",");
+                                    String lastParam = (String)serverMethodParameters[serverMethodParameters.length - 1];
+                                    lastParam = lastParam.substring(0, lastParam.length() - 1);
+                                    serverMethodParameters[serverMethodParameters.length - 1] = lastParam;
+                                    String desiredClassName = desiredClass.getName();
+                                    try{
+                                        Class mathLogic = Class.forName(desiredClassName);
+                                        Object matLog = mathLogic.newInstance();
+
+                                        Method methodToInvoke = mathLogic.getMethod(methodName, Object[].class);
+                                        int result = (Integer)methodToInvoke.invoke(matLog, new Object[] {serverMethodParameters});
+                                        response.append(result);
+
+                                    } catch (NoSuchMethodException e){
+                                        e.printStackTrace();
+                                    } catch (InvocationTargetException e) {
+                                        e.printStackTrace();
+                                    } catch (IllegalAccessException e) {
+                                        e.printStackTrace();
+                                    } catch (ClassNotFoundException e) {
+                                        e.printStackTrace();
+                                    } catch (InstantiationException e) {
+                                        e.printStackTrace();
+                                    }
+                                    foundMethod = true;
+                                    writeLine(out, response.toString());
+                                    response.delete(0, response.length());
+                                    break;
+                                }
+                            }
+                            if (!foundMethod)
+                                writeLine(out, BAD_MESSAGE);
+
+                            out.flush();
+                        } while(true);
+                    } else {
+                        classExists = false;
+                    }
+                } while (!classExists);
 
                 out.close();
                 clientSocket.close();
@@ -121,6 +160,49 @@ public class Server {
 
         out.println(message);
         out.flush();
+    }
+
+    @SuppressWarnings("unchecked")
+    protected List<Class<IMath>> getClassesInPackage(String packageName) throws ClassNotFoundException{
+
+        List<String> classNames = new ArrayList<String>();
+        List<Class<IMath>> mathClasses = new ArrayList<Class<IMath>>();
+
+        URL rootDirectory = Thread.currentThread().getContextClassLoader().getResource(packageName.replace(".", "/"));
+
+        File[] classes = getFilesOfType(rootDirectory, ".class");
+
+        for(File mathClass : classes){
+            String className = mathClass.getName().replaceAll(".class", "");
+            Class<IMath> iMathClass = (Class<IMath>)Class.forName("math." + className);
+            if (IMath.class.isAssignableFrom(iMathClass));
+                mathClasses.add(iMathClass);
+        }
+
+        return mathClasses;
+    }
+
+    protected File[] getFilesOfType(URL rootDirectory, final String fileType){
+
+        File file = null;
+        try {
+            file = new File(URLDecoder.decode(rootDirectory.getFile(), "UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+        File[] files = null;
+        if (file != null) {
+            files = file.listFiles(
+                    new FilenameFilter() {
+                        @Override
+                        public boolean accept(File dir, String name) {
+                            return name.endsWith(".class");
+                        }
+                    }
+            );
+        }
+        return files;
     }
 
     protected List<String> getMethodSignatures(Class currentClass){

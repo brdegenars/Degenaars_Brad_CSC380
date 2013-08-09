@@ -18,6 +18,7 @@ import java.util.Scanner;
 public class Client {
 
     private static String[] availableMethods;
+    private static String[] availableClasses;
     private static String operation;
 
     protected static String promptUser(String message) throws IOException{
@@ -78,6 +79,25 @@ public class Client {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(clientSideSocket.getInputStream()));
 
             do {
+                System.out.println("The following classes are available to invoke: ");
+
+                if(availableClasses == null){
+                    String serverResponse = bufferedReader.readLine();
+                    availableClasses = serverResponse.split("//");
+                }
+
+                for(String className : availableClasses){
+                    System.out.println(className.split("\\.")[1]);
+                }
+                String classToLoad = promptUser("Which class would you like an instance of? (Type 'Q' to quit)\n:");
+
+                if (classToLoad.equalsIgnoreCase("q")){
+                    wantsToQuit = true;
+                    break;
+                }
+
+                writeLine(out, classToLoad);
+
                 do {
                     System.out.println("The follow methods are available: ");
                     if (availableMethods == null){
