@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<Restaurants>
+    <Restaurant>
+        <Name>South of the Border</Name>
+        <Genre>Mexican</Genre>
+        <Menu>
+            <Apps>
+                <App>
+                    <Name>Nachos</Name>
+                    <Price>4.99</Price>
+                </App>
+                <App>
+                    <Name>Cheese Quesadilla</Name>
+                    <Price>3.99</Price>
+                </App>
+            </Apps>
+            <Entrees>
+                <Entree>
+                    <Name>Two Tacos w/ Beans and Rice</Name>
+                    <Price>10.99</Price>
+                </Entree>
+                <Entree>
+                    <Name>Grande Burrito</Name>
+                    <Price>8.99</Price>
+                </Entree>
+            </Entrees>
+        </Menu>
+    </Restaurant>
+    <Restaurant>
+        <Name>Cindy Lee's</Name>
+        <Genre>Chinese</Genre>
+        <Menu>
+            <Apps>
+                <App>
+                    <Name>Pot Stickers</Name>
+                    <Price>5.99</Price>
+                </App>
+                <App>
+                    <Name>Dumplings</Name>
+                    <Price>4.99</Price>
+                </App>
+            </Apps>
+            <Entrees>
+                <Entree>
+                    <Name>Orange Chicken</Name>
+                    <Price>10.99</Price>
+                </Entree>
+                <Entree>
+                    <Name>Mongolian Beef</Name>
+                    <Price>12.99</Price>
+                </Entree>
+            </Entrees>
+        </Menu>
+    </Restaurant>
+</Restaurants>
