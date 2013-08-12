@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ns1="http://localhost/RestaurantWebService" name="RestaurantWebService" targetNamespace="http://localhost/RestaurantWebService" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <xs:schema xmlns:tns="http://localhost/RestaurantWebService" elementFormDefault="unqualified" targetNamespace="http://localhost/RestaurantWebService" version="1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+      <xs:element name="getRestaurants" type="tns:getRestaurants" />
+      <xs:element name="getRestaurantsResponse" type="tns:getRestaurantsResponse" />
+      <xs:element name="placeOrder" type="tns:placeOrder" />
+      <xs:element name="placeOrderResponse" type="tns:placeOrderResponse" />
+      <xs:complexType name="placeOrder">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="order" type="tns:order" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="order">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="apps" nillable="true" type="tns:app" />
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="entrees" nillable="true" type="tns:entree" />
+          <xs:element minOccurs="0" name="restaurantName" type="xs:string" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="app">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="name" type="xs:string" />
+          <xs:element minOccurs="0" name="price" type="xs:double" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="entree">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="name" type="xs:string" />
+          <xs:element minOccurs="0" name="price" type="xs:double" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="placeOrderResponse">
+        <xs:sequence />
+      </xs:complexType>
+      <xs:complexType name="getRestaurants">
+        <xs:sequence />
+      </xs:complexType>
+      <xs:complexType name="getRestaurantsResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="restaurants" type="tns:restaurant" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="restaurant">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="genre" type="xs:string" />
+          <xs:element minOccurs="0" name="menu" type="tns:menu" />
+          <xs:element minOccurs="0" name="name" type="xs:string" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="menu">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="availableApps" nillable="true" type="tns:app" />
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="availableEntrees" nillable="true" type="tns:entree" />
+        </xs:sequence>
+      </xs:complexType>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="placeOrderResponse">
+    <wsdl:part name="parameters" element="ns1:placeOrderResponse" />
+  </wsdl:message>
+  <wsdl:message name="getRestaurantsResponse">
+    <wsdl:part name="parameters" element="ns1:getRestaurantsResponse" />
+  </wsdl:message>
+  <wsdl:message name="getRestaurants">
+    <wsdl:part name="parameters" element="ns1:getRestaurants" />
+  </wsdl:message>
+  <wsdl:message name="placeOrder">
+    <wsdl:part name="parameters" element="ns1:placeOrder" />
+  </wsdl:message>
+  <wsdl:portType name="RestaurantWebService">
+    <wsdl:operation name="placeOrder">
+      <wsdl:input name="placeOrder" message="ns1:placeOrder" />
+      <wsdl:output name="placeOrderResponse" message="ns1:placeOrderResponse" />
+    </wsdl:operation>
+    <wsdl:operation name="getRestaurants">
+      <wsdl:input name="getRestaurants" message="ns1:getRestaurants" />
+      <wsdl:output name="getRestaurantsResponse" message="ns1:getRestaurantsResponse" />
+    </wsdl:operation>
+  </wsdl:portType>
+</wsdl:definitions>
