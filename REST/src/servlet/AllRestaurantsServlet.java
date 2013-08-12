@@ -1,6 +1,10 @@
 package servlet;
 
-import java.io.IOException;
+import javax.servlet.annotation.WebServlet;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import java.io.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -9,6 +13,7 @@ import java.io.IOException;
  * Time: 1:37 PM
  * To change this template use File | Settings | File Templates.
  */
+@WebServlet("/restaurants")
 public class AllRestaurantsServlet extends javax.servlet.http.HttpServlet {
     protected void doPost(javax.servlet.http.HttpServletRequest request, javax.servlet.http.HttpServletResponse response) throws javax.servlet.ServletException, IOException {
 
@@ -16,5 +21,28 @@ public class AllRestaurantsServlet extends javax.servlet.http.HttpServlet {
 
     protected void doGet(javax.servlet.http.HttpServletRequest request, javax.servlet.http.HttpServletResponse response) throws javax.servlet.ServletException, IOException {
 
+        JAXBContext restaurantContext = null;
+        Unmarshaller restaurantUnmarshaller = null;
+        File file = null;
+
+        String relativePath = "\\WEB-INF\\resources\\Restaurants.xml";
+        String absoluteFilePath = getServletContext().getRealPath(relativePath);
+
+        file = new File(absoluteFilePath);
+
+
+        InputStream inputStream = new FileInputStream(file);
+        InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+        BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+
+        response.setContentType("text/xml;charset=UTF-8");
+
+        PrintWriter out = response.getWriter();
+        String currentLine;
+
+        while((currentLine = bufferedReader.readLine()) != null){
+            out.append(currentLine);
+        }
+        out.flush();
     }
 }
