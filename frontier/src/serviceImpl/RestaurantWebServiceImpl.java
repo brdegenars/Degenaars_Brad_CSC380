@@ -19,11 +19,11 @@ import java.util.Queue;
 @WebService(endpointInterface = "service.RestaurantWebService", serviceName = "RestaurantWebService")
 public class RestaurantWebServiceImpl implements RestaurantWebService {
 
-    private static final Queue<Order> orders;
+    private static final List<Order> orders;
     private static final List<Restaurant> restaurants;
 
     static{
-        orders = new PriorityQueue<Order>();
+        orders = new ArrayList<>();
         restaurants = new ArrayList<Restaurant>();
 
         List<App> apps = new ArrayList<App>();
