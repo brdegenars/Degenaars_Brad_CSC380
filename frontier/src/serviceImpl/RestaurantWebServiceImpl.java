@@ -57,6 +57,21 @@ public class RestaurantWebServiceImpl implements RestaurantWebService {
 
     @Override
     public void placeOrder(@WebParam(name = "order") Order order) {
+
+        System.out.println("Order: ");
+        System.out.println("Restaurant: " + order.getRestaurantName());
+        List<Entree> entrees = order.getEntrees();
+        List<App> apps = order.getApps();
+
+        System.out.println("Apps ordered: ");
+        for(App app : apps){
+            System.out.println(app.getName());
+        }
+
+        System.out.println("Entrees ordered: ");
+        for(Entree entree : entrees){
+            System.out.println(entree.getName());
+        }
         orders.add(order);
     }
 }
