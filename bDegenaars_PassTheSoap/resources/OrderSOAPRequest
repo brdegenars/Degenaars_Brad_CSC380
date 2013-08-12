@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<soap:Envelope
+        xmlns:soap="http://www.w3.org/2001/12/soap-envelope"
+        soap:encodingStyle="http://www.w3.org/2001/12/soap-encoding">
+
+    <soap:Body xmlns:m="http://localhost:8080/restaurants/soap/order/">
+        <m:placeOrder>
+            <m:Restaurant>
+                <m:Name>South of the Border</m:Name>
+                <m:Apps>
+                    <m:App>
+                        <m:Name>Nachos</m:Name>
+                    </m:App>
+                </m:Apps>
+                <m:Entrees>
+                    <m:Entree>
+                        <m:Name>Grande Burrito</m:Name>
+                    </m:Entree>
+                </m:Entrees>
+            </m:Restaurant>
+        </m:placeOrder>
+    </soap:Body>
+
+</soap:Envelope>

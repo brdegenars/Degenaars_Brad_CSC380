@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<soap:Envelope
+        xmlns:soap="http://www.w3.org/2001/12/soap-envelope"
+        soap:encodingStyle="http://www.w3.org/2001/12/soap-encoding">
+
+    <soap:Body>
+        <m:getAllRestaurants xmlns:m="http://localhost:8080/restaurants/soap/GetRestaurants/">
+            <m:Restaurant>
+                <m:Name>South of the Border</m:Name>
+                <m:Genre>Mexican</m:Genre>
+            </m:Restaurant>
+            <m:Restaurant>
+                <m:Name>Cindy Lee's</m:Name>
+                <m:Genre>Chinese</m:Genre>
+            </m:Restaurant>
+        </m:getAllRestaurants>
+    </soap:Body>
+
+</soap:Envelope>
