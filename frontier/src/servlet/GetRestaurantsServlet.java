@@ -2,7 +2,7 @@ package servlet;
 
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
-import org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet;
+import org.apache.cxf.transport.servlet.CXFNonSpringServlet;
 import serviceImpl.RestaurantWebServiceImpl;
 
 import javax.servlet.ServletConfig;
@@ -17,7 +17,7 @@ import javax.xml.ws.Endpoint;
  * To change this template use File | Settings | File Templates.
  */
 @WebServlet("/services/*")
-public class GetRestaurantsServlet extends CXFNonSpringJaxrsServlet {
+public class GetRestaurantsServlet extends CXFNonSpringServlet {
 
     @Override
     protected void loadBus(ServletConfig sc){
