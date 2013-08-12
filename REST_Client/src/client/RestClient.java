@@ -5,9 +5,7 @@ import gen.service.client.*;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -40,17 +38,49 @@ public class RestClient {
         Restaurant chosenRestaurant = promptUserForRestaurant(restaurants);
         List<App> appsToOrder = promptUserForApps(chosenRestaurant);
         List<Entree> entreesToOrder = promptUserForEntree(chosenRestaurant);
+        try{
+            String baseUrl = SERVER_PROTOCOL + "://" + SERVER_HOST + ":" + SERVER_PORT + "/restaurants/order/" + chosenRestaurant.getName() + "/";
+            StringBuilder urlLiteral = new StringBuilder(baseUrl);
+            int count = 0;
+            System.out.println("\nYou ordered: \n");
+            if (!appsToOrder.isEmpty()){
+                for(App app : appsToOrder){
+                    System.out.println(app.getName());
+                    if(count++ > 0)
+                        urlLiteral.append("&");
+                    urlLiteral.append(app.getName());
+                }
+                System.out.println("And");
+                count = 0;
+            }
+            urlLiteral.append("/");
+            if(!entreesToOrder.isEmpty()){
+                for(Entree entree : entreesToOrder){
+                    System.out.println(entree.getName());
+                    if(count++ > 0)
+                        urlLiteral.append("&");
+                    urlLiteral.append(entree.getName());
+                }
+            }
 
-        System.out.println("\nYou ordered: \n");
-        for(App app : appsToOrder){
-            System.out.println(app.getName());
+            InputStream response;
+
+            connection = (HttpURLConnection) new URL(urlLiteral.toString().replace(" ", "%20")).openConnection();
+            connection.setRequestMethod("GET");
+            connection.setRequestProperty("Accept", "text/html");
+            response = connection.getInputStream();
+
+            InputStreamReader inputStreamReader = new InputStreamReader(response);
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+
+            System.out.println("Your total is: $" + bufferedReader.readLine());
+        } catch (ProtocolException e) {
+            e.printStackTrace();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        System.out.println("And");
-        for(Entree entree : entreesToOrder){
-            System.out.println(entree.getName());
-        }
-
-
     }
 
     public List<Entree> promptUserForEntree(Restaurant restaurant){
@@ -67,19 +97,20 @@ public class RestClient {
             String userInput = scanner.nextLine();
 
             String[] desiredEntrees = userInput.split(",");
+            if(desiredEntrees.length > 0 && !desiredEntrees[0].equals("")){
+                for(String entreeName : desiredEntrees){
+                    entreeOK = false;
 
-            for(String entreeName : desiredEntrees){
-                entreeOK = false;
-
-                for(Entree entree : listOfEntrees){
-                    if (entreeName.trim().equalsIgnoreCase(entree.getName())){
-                        entreesToOrder.add(entree);
-                        entreeOK = true;
-                        break;
+                    for(Entree entree : listOfEntrees){
+                        if (entreeName.trim().equalsIgnoreCase(entree.getName())){
+                            entreesToOrder.add(entree);
+                            entreeOK = true;
+                            break;
+                        }
                     }
+                    if(!entreeOK) System.out.println("One or more of your appetizers was not on the menu.");
                 }
-                if(!entreeOK) System.out.println("One or more of your appetizers was not on the menu.");
-            }
+            } else entreeOK = true;
         } while (!entreeOK);
         return entreesToOrder;
     }
@@ -99,18 +130,20 @@ public class RestClient {
 
             String[] desiredApps = userInput.split(",");
 
-            for(String appName : desiredApps){
-                appOK = false;
+            if(desiredApps.length > 0 && !desiredApps[0].equals("")){
+                for(String appName : desiredApps){
+                    appOK = false;
 
-                for(App app : listOfApps){
-                    if (appName.trim().equalsIgnoreCase(app.getName())){
-                        appsToOrder.add(app);
-                        appOK = true;
-                        break;
+                    for(App app : listOfApps){
+                        if (appName.trim().equalsIgnoreCase(app.getName())){
+                            appsToOrder.add(app);
+                            appOK = true;
+                            break;
+                        }
                     }
+                    if(!appOK) System.out.println("One or more of your appetizers was not on the menu.");
                 }
-                if(!appOK) System.out.println("One or more of your appetizers was not on the menu.");
-            }
+            } else appOK = true;
         } while (!appOK);
         return appsToOrder;
     }

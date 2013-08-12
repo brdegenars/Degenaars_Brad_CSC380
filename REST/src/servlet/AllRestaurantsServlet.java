@@ -1,9 +1,6 @@
 package servlet;
 
 import javax.servlet.annotation.WebServlet;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 import java.io.*;
 
 /**
@@ -21,15 +18,10 @@ public class AllRestaurantsServlet extends javax.servlet.http.HttpServlet {
 
     protected void doGet(javax.servlet.http.HttpServletRequest request, javax.servlet.http.HttpServletResponse response) throws javax.servlet.ServletException, IOException {
 
-        JAXBContext restaurantContext = null;
-        Unmarshaller restaurantUnmarshaller = null;
-        File file = null;
-
         String relativePath = "\\WEB-INF\\resources\\Restaurants.xml";
         String absoluteFilePath = getServletContext().getRealPath(relativePath);
 
-        file = new File(absoluteFilePath);
-
+        File file = new File(absoluteFilePath);
 
         InputStream inputStream = new FileInputStream(file);
         InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
